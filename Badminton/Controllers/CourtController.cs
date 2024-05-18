@@ -17,9 +17,9 @@ namespace Badminton.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(GetAllRequestModel request)
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(await courtRepo.GetAllAsync(request));
+            return Ok(await courtRepo.GetAllAsync());
         }
 
         [HttpGet("{id:guid}")]

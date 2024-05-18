@@ -3,6 +3,8 @@ using Data_Access_Layer.Entities;
 using Data_Access_Layer.Services.Interface;
 using Data_Transfer_Object.CategoryDTO;
 using Data_Transfer_Object.GetAll;
+using Data_Transfer_Object.ProductDTO;
+using System.Collections.Generic;
 
 namespace Business_Logic_Layer.CategoryBLL
 {
@@ -16,6 +18,15 @@ namespace Business_Logic_Layer.CategoryBLL
             this.categoryRepo = categoryRepo;
             this.mapper = mapper;
         }
+        public async Task<List<GetCategory>> GetPaginationAsync(int pageNumber, int pageSize)
+        {
+            var allCategory = await categoryRepo.GetAllAsync();
+            var skipResult = (pageNumber - 1) * pageSize;
+
+            var result = mapper.Map<List<GetCategory>>(allCategory.Skip(skipResult).Take(pageSize));
+            return result;
+        }
+
 
         //create
         public async Task<bool> CreateAsync(CategoryRequestDTO category)
@@ -36,31 +47,12 @@ namespace Business_Logic_Layer.CategoryBLL
         }
 
         //get all
-        public async Task<List<GetCategory>> GetAllAsync(GetAllRequestModel request)
+        public async Task<List<GetCategory>> GetAllAsync()
         {
             var allCategory = await categoryRepo.GetAllAsync();
+            var result = mapper.Map<List<GetCategory>>(allCategory);
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false && string.IsNullOrWhiteSpace(request.FilterQuery) == false)
-            {
-                if (request.FilterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    //Contains lọc phân biệt chữ hoa chữ thường.
-                    allCategory = mapper.Map<List<Category>>(allCategory.Where(p => p.Name.ToLowerInvariant().Contains(request.FilterQuery.ToLowerInvariant())));
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    allCategory = mapper.Map<List<Category>>(request.IsAcsending ? allCategory.OrderBy(x => x.Name) : allCategory.OrderByDescending(x => x.Name));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
-
-            var list = mapper.Map<List<GetCategory>>(allCategory.Skip(skipResult).Take(request.PageSize));
-
-            return list;
+            return result;
         }
 
         //get by id
@@ -76,6 +68,18 @@ namespace Business_Logic_Layer.CategoryBLL
             var result = mapper.Map<Category>(category);
             result.Id = id;
             return await categoryRepo.UpdateAsync(result);
+        }
+
+        //page number total
+        public async Task<int> TotalPage(double pageSize)
+        {
+            var getAll = await categoryRepo.GetAllAsync();
+
+            var count = getAll.Count();
+            double pageNumber = count / pageSize;
+            int result = (int)Math.Ceiling(pageNumber);
+
+            return result;
         }
     }
 }

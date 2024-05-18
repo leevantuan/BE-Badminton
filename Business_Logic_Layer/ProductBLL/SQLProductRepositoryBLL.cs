@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Data_Access_Layer.Entities;
 using Data_Access_Layer.Services.Interface;
 using Data_Transfer_Object.GetAll;
 using Data_Transfer_Object.ProductDTO;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Business_Logic_Layer.ProductBLL
 {
@@ -10,11 +12,15 @@ namespace Business_Logic_Layer.ProductBLL
     {
         private readonly IProductRepository productRepo;
         private readonly IMapper mapper;
+        private readonly IProductOrderRepository productOrderRepo;
+        private readonly IProductBillRepository productBillRepo;
 
-        public SQLProductRepositoryBLL(IProductRepository productRepo, IMapper mapper)
+        public SQLProductRepositoryBLL(IProductRepository productRepo, IMapper mapper, IProductOrderRepository productOrderRepo, IProductBillRepository productBillRepo)
         {
             this.productRepo = productRepo;
             this.mapper = mapper;
+            this.productOrderRepo = productOrderRepo;
+            this.productBillRepo = productBillRepo;
         }
 
         //change
@@ -57,29 +63,38 @@ namespace Business_Logic_Layer.ProductBLL
         }
 
         //get all
-        public async Task<List<GetProduct>> GetAllAsync(GetAllRequestModel request)
+        public async Task<List<GetProduct>> GetAllAsync(int pageNumber, int pageSize, string filterQuery)
         {
+            var result = new List<GetProduct>();
             var allProduct = await productRepo.GetAllAsync();
+            allProduct = allProduct.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false && string.IsNullOrWhiteSpace(request.FilterQuery) == false)
+            foreach (var product in allProduct)
             {
-                if (request.FilterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                double totalOrder = 0;
+                double totalBill = 0;
+
+                var resProduct = mapper.Map<GetProduct>(product);
+                var listOrdel = await productOrderRepo.GetByProductIdAsync(product.Id);
+                var listBill = await productBillRepo.GetByProductIdAsync(product.Id);
+
+                foreach (var order in listOrdel)
                 {
-                    //Contains lọc phân biệt chữ hoa chữ thường.
-                    allProduct = mapper.Map<List<Product>>(allProduct.Where(p => p.Name.Contains(request.FilterQuery)));
+                    totalOrder = totalOrder + order.Quantity;
                 }
+
+                foreach (var bill in listBill)
+                {
+                    totalBill = totalBill + bill.Quantity;
+                }
+                resProduct.SoldQuantity = totalBill + totalOrder;
+
+                result.Add(resProduct);
             }
 
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Quantity", StringComparison.OrdinalIgnoreCase))
-                {
-                    allProduct = mapper.Map<List<Product>>(request.IsAcsending ? allProduct.OrderBy(x => x.Quantity) : allProduct.OrderByDescending(x => x.Quantity));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
+            var skipResult = (pageNumber - 1) * pageSize;
 
-            var list = mapper.Map<List<GetProduct>>(allProduct.Skip(skipResult).Take(request.PageSize));
+            var list = mapper.Map<List<GetProduct>>(result.Skip(skipResult).Take(pageSize));
 
             return list;
 
@@ -89,7 +104,26 @@ namespace Business_Logic_Layer.ProductBLL
         public async Task<GetProduct?> GetByIdAsync(Guid id)
         {
             var data = await productRepo.GetByIdAsync(id);
-            return mapper.Map<GetProduct?>(data);
+
+            double totalOrder = 0;
+            double totalBill = 0;
+
+            var resProduct = mapper.Map<GetProduct>(data);
+            var listOrdel = await productOrderRepo.GetByProductIdAsync(data.Id);
+            var listBill = await productBillRepo.GetByProductIdAsync(data.Id);
+
+            foreach (var order in listOrdel)
+            {
+                totalOrder = totalOrder + order.Quantity;
+            }
+
+            foreach (var bill in listBill)
+            {
+                totalBill = totalBill + bill.Quantity;
+            }
+            resProduct.SoldQuantity = totalBill + totalOrder;
+
+            return resProduct;
         }
 
         //update
@@ -107,6 +141,19 @@ namespace Business_Logic_Layer.ProductBLL
             var listProduct = await productRepo.GetAllAsync();
             result = mapper.Map<List<GetProduct>>(listProduct.Where(p => p.CategoryId == categoryId));
             return result;
+        }
+
+        public async Task<int> TotalPage(double pageSize, string filterQuery)
+        {
+            var getAll = await productRepo.GetAllAsync();
+            getAll = getAll.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
+
+            var count = getAll.Count();
+            double pageNumber = count / pageSize;
+            int result = (int)Math.Ceiling(pageNumber);
+
+            return result;
+
         }
     }
 }

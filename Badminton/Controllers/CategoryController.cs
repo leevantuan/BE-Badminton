@@ -17,9 +17,21 @@ namespace Badminton.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(GetAllRequestModel request)
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(await categoryRepo.GetAllAsync(request));
+            return Ok(await categoryRepo.GetAllAsync());
+        }
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetPanigation(int pageNumber, int pageSize)
+        {
+            return Ok(await categoryRepo.GetPaginationAsync(pageNumber, pageSize));
+        }
+
+        [HttpGet("PageTotal")]
+        public async Task<IActionResult> GetTotalPage(double pageSize)
+        {
+            return Ok(await categoryRepo.TotalPage( pageSize));
         }
 
         [HttpGet("{id:guid}")]

@@ -14,7 +14,11 @@ namespace Data_Access_Layer.Entities
 
         public double PriceSale { get; set; }
 
+        public int? Size { get; set; }
+
         public string Unit { get; set; }
+
+        public string? Brand { get; set; }
 
         [ForeignKey("Category")]
         public Guid CategoryId { get; set; }

@@ -1,11 +1,12 @@
-﻿using Data_Transfer_Object.GetAll;
-using Data_Transfer_Object.PurchaseOrderDTO;
+﻿using Data_Transfer_Object.PurchaseOrderDTO;
 
 namespace Business_Logic_Layer.PurchaseOrderBLL
 {
     public interface IPurchaseOrderRepositoryBLL
     {
-        public Task<List<GetPurchaseOrder>> GetAllAsync(GetAllDateTimeModel request);
+        public Task<List<GetPurchaseOrderDetail>> GetAllAsync(int pageNumber, int pageSize, string filterQuery);
+
+        public Task<int> TotalPage(double pageSize, string filterQuery);
 
         public Task<GetPurchaseOrder?> GetByIdAsync(Guid id);
 

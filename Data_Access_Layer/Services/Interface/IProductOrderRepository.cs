@@ -8,6 +8,8 @@ namespace Data_Access_Layer.Services.Interface
 
         public Task<ProductOrder?> GetByIdAsync(Guid id);
 
+        public Task<List<ProductOrder>> GetByProductIdAsync(Guid productId);
+
         public Task<bool> CreateAsync(ProductOrder productOrder);
 
         //public Task<bool> UpdateAsync(Guid id, ProductOrderUpdate productOrder);

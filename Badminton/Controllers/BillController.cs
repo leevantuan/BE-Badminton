@@ -67,6 +67,7 @@ namespace Badminton.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+
             return Ok(await billRepo.DeleteAsync(id));
         }
     }

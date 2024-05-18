@@ -22,7 +22,9 @@ namespace Badminton.Controllers
             return Ok(await authRepositoryBLL.Delete(email));
         }
 
-        [HttpGet("GetAll")]
+        //string? filterOn, string? filterQuery, int? pageNumber, int? pageSize
+
+        [HttpPut("GetAll")]
         public async Task<IActionResult> GetAll(GetAllRequestModel request)
         {
             var data = await authRepositoryBLL.GetAll(request);

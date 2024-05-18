@@ -2,23 +2,29 @@
 using Business_Logic_Layer.ProductBLL;
 using Data_Access_Layer.Entities;
 using Data_Access_Layer.Services.Interface;
-using Data_Transfer_Object.GetAll;
 using Data_Transfer_Object.ProductDTO;
 using Data_Transfer_Object.PurchaseOrderDTO;
+using Microsoft.AspNetCore.Identity;
 
 namespace Business_Logic_Layer.PurchaseOrderBLL
 {
     public class SQLPurchaseOrderRepositoryBLL : IPurchaseOrderRepositoryBLL
     {
+        private readonly UserManager<IdentityUser> userManager;
         private readonly IPurchaseOrderRepository purchaseRepo;
         private readonly IMapper mapper;
         private readonly IProductRepositoryBLL productRepo;
+        private readonly IProductRepository product;
+        private readonly ISupplierRepository supplier;
 
-        public SQLPurchaseOrderRepositoryBLL(IPurchaseOrderRepository purchaseRepo, IMapper mapper, IProductRepositoryBLL productRepo)
+        public SQLPurchaseOrderRepositoryBLL(UserManager<IdentityUser> userManager, IPurchaseOrderRepository purchaseRepo, IMapper mapper, IProductRepositoryBLL productRepo, IProductRepository product, ISupplierRepository supplier)
         {
+            this.userManager = userManager;
             this.purchaseRepo = purchaseRepo;
             this.mapper = mapper;
             this.productRepo = productRepo;
+            this.product = product;
+            this.supplier = supplier;
         }
 
         //create
@@ -60,30 +66,73 @@ namespace Business_Logic_Layer.PurchaseOrderBLL
         }
 
         //get all ...fixxx
-        public async Task<List<GetPurchaseOrder>> GetAllAsync(GetAllDateTimeModel request)
+        public async Task<List<GetPurchaseOrderDetail>> GetAllAsync(int pageNumber, int pageSize, string filterQuery)
         {
+            var result = new List<GetPurchaseOrderDetail>();
             var allPurchase = await purchaseRepo.GetAllAsync();
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false)
+            foreach (var purchase in allPurchase)
             {
-                if (request.FilterOn.Equals("Date", StringComparison.OrdinalIgnoreCase))
+                var purchaseCus = mapper.Map<GetPurchaseOrderDetail>(purchase);
+                var pro = await product.GetByIdAsync(purchase.ProductId);
+                var sup = await supplier.GetByIdAsync(purchase.SupplierId);
+                var user = await userManager.FindByIdAsync(purchase.UserId);
+                if(pro != null && sup != null)
                 {
-                    allPurchase = mapper.Map<List<PurchaseOrder>>(allPurchase.Where(p => p.CrateAt == request.FilterQuery));
+                    purchaseCus.ProductName = pro.Name;
+                    purchaseCus.SupplierName = sup.Name;
+                    purchaseCus.UserName = user.UserName;
+
+                    result.Add(purchaseCus);
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Date", StringComparison.OrdinalIgnoreCase))
-                {
-                    allPurchase = mapper.Map<List<PurchaseOrder>>(request.IsAcsending ? allPurchase.OrderBy(x => x.CrateAt) : allPurchase.OrderByDescending(x => x.CrateAt));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
 
-            var list = mapper.Map<List<GetPurchaseOrder>>(allPurchase.Skip(skipResult).Take(request.PageSize));
+            result = result.Where(p => p.ProductName.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
+
+            var skipResult = (pageNumber - 1) * pageSize;
+
+            var list = mapper.Map<List<GetPurchaseOrderDetail>>(result.Skip(skipResult).Take(pageSize));
 
             return list;
+        }
+
+        //get all customer 
+        private async Task<List<GetPurchaseOrderDetail>> GetCustom()
+        {
+            var result = new List<GetPurchaseOrderDetail>();
+            var allPurchase = await purchaseRepo.GetAllAsync();
+
+            foreach (var purchase in allPurchase)
+            {
+                var purchaseCus = mapper.Map<GetPurchaseOrderDetail>(purchase);
+                var pro = await product.GetByIdAsync(purchase.ProductId);
+                var sup = await supplier.GetByIdAsync(purchase.SupplierId);
+                var user = await userManager.FindByIdAsync(purchase.UserId);
+
+                if (pro != null && sup != null)
+                {
+                    purchaseCus.ProductName = pro.Name;
+                    purchaseCus.SupplierName = sup.Name;
+                    purchaseCus.UserName = user.UserName;
+
+                    result.Add(purchaseCus);
+                }
+            }
+
+            return result;
+        }
+        //total page
+        public async Task<int> TotalPage(double pageSize, string filterQuery)
+        {
+            var getAll = await GetCustom();
+            getAll = getAll.Where(p => p.ProductName.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
+
+            var count = getAll.Count();
+            double pageNumber = count / pageSize;
+            int result = (int)Math.Ceiling(pageNumber);
+
+            return result;
         }
 
         //get by id
@@ -123,7 +172,7 @@ namespace Business_Logic_Layer.PurchaseOrderBLL
         //    return false;
         //}
 
-        //supplier id
+        //Purchase id
         
         public async Task<List<GetPurchaseOrderDetail>> GetBySupplierIdAsync(Guid supplierId)
         {

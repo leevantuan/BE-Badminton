@@ -75,6 +75,9 @@ namespace TheBookStore.Helper
 
             CreateMap<CategoryRequestDTO, Category>().ReverseMap();
             CreateMap<GetCategory, Category>().ReverseMap();
+            CreateMap<CategoryUpdate, Category>().ReverseMap();
+
+            
         }
     }
 }

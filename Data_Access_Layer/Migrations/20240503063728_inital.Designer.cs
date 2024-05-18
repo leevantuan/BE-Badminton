@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data_Access_Layer.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20240418130557_inital")]
+    [Migration("20240503063728_inital")]
     partial class inital
     {
         /// <inheritdoc />
@@ -204,6 +204,9 @@ namespace Data_Access_Layer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Brand")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -223,6 +226,9 @@ namespace Data_Access_Layer.Migrations
 
                     b.Property<double>("Quantity")
                         .HasColumnType("float");
+
+                    b.Property<int?>("Size")
+                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
                         .IsRequired()

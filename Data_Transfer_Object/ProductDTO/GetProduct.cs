@@ -10,7 +10,13 @@
 
         public double Quantity { get; set; }
 
+        public double SoldQuantity { get; set; }
+
         public double PriceSale { get; set; }
+
+        public int? Size { get; set; }
+
+        public string? Brand { get; set; }
 
         public string Unit { get; set; }
 

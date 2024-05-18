@@ -241,7 +241,9 @@ namespace Data_Access_Layer.Migrations
                     ImgLink = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Quantity = table.Column<double>(type: "float", nullable: false),
                     PriceSale = table.Column<double>(type: "float", nullable: false),
+                    Size = table.Column<int>(type: "int", nullable: true),
                     Unit = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Brand = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsStatus = table.Column<bool>(type: "bit", nullable: false)
                 },

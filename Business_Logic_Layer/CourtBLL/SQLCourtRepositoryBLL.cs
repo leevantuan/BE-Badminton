@@ -36,28 +36,11 @@ namespace Business_Logic_Layer.CourtBLL
         }
 
         //get all
-        public async Task<List<GetCourt>> GetAllAsync(GetAllRequestModel request)
+        public async Task<List<GetCourt>> GetAllAsync()
         {
             var allCourt = await courtRepo.GetAllAsync();
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false && string.IsNullOrWhiteSpace(request.FilterQuery) == false)
-            {
-                if (request.FilterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    //Contains lọc phân biệt chữ hoa chữ thường.
-                    allCourt = mapper.Map<List<Court>>(allCourt.Where(p => p.Name.ToLowerInvariant().Contains(request.FilterQuery.ToLowerInvariant())));
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Status", StringComparison.OrdinalIgnoreCase))
-                {
-                    allCourt = mapper.Map<List<Court>>(request.IsAcsending ? allCourt.OrderBy(x => x.IsStatus) : allCourt.OrderByDescending(x => x.IsStatus));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
-            var list = mapper.Map<List<GetCourt>>(allCourt.Skip(skipResult).Take(request.PageSize));
+            var list = mapper.Map<List<GetCourt>>(allCourt);
             return list;
         }
 

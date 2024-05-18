@@ -2,6 +2,7 @@
 using Data_Access_Layer.Entities;
 using Data_Access_Layer.Services.Interface;
 using Data_Transfer_Object.GetAll;
+using Data_Transfer_Object.ProductDTO;
 using Data_Transfer_Object.SupplierDTO;
 
 namespace Business_Logic_Layer.SupplierBLL
@@ -36,29 +37,14 @@ namespace Business_Logic_Layer.SupplierBLL
         }
 
         //get all
-        public async Task<List<GetSupplier>> GetAllAsync(GetAllRequestModel request)
+        public async Task<List<GetSupplier>> GetAllAsync(int pageNumber, int pageSize, string filterQuery)
         {
             var allSupplier = await supplierRepo.GetAllAsync();
+            allSupplier = allSupplier.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false && string.IsNullOrWhiteSpace(request.FilterQuery) == false)
-            {
-                if (request.FilterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    //Contains lọc phân biệt chữ hoa chữ thường.
-                    allSupplier = mapper.Map<List<Supplier>>(allSupplier.Where(p => p.Name.ToLowerInvariant().Contains(request.FilterQuery.ToLowerInvariant())));
-                }
-            }
+            var skipResult = (pageNumber - 1) * pageSize;
 
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    allSupplier = mapper.Map<List<Supplier>>(request.IsAcsending ? allSupplier.OrderBy(x => x.Name) : allSupplier.OrderByDescending(x => x.Name));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
-
-            var list = mapper.Map<List<GetSupplier>>(allSupplier.Skip(skipResult).Take(request.PageSize));
+            var list = mapper.Map<List<GetSupplier>>(allSupplier.Skip(skipResult).Take(pageSize));
 
             return list;
 
@@ -78,5 +64,18 @@ namespace Business_Logic_Layer.SupplierBLL
             result.Id = id;
             return await supplierRepo.UpdateAsync(result);
         }
+
+        public async Task<int> TotalPage(double pageSize, string filterQuery)
+        {
+            var getAll = await supplierRepo.GetAllAsync();
+            getAll = getAll.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
+
+            var count = getAll.Count();
+            double pageNumber = count / pageSize;
+            int result = (int)Math.Ceiling(pageNumber);
+
+            return result;
+        }
+
     }
 }

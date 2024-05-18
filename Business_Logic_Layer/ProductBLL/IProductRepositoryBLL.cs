@@ -5,7 +5,7 @@ namespace Business_Logic_Layer.ProductBLL
 {
     public interface IProductRepositoryBLL
     {
-        public Task<List<GetProduct>> GetAllAsync(GetAllRequestModel request);
+        public Task<List<GetProduct>> GetAllAsync(int pageNumber, int pageSize, string filterQuery);
 
         public Task<GetProduct?> GetByIdAsync(Guid id);
 
@@ -20,5 +20,8 @@ namespace Business_Logic_Layer.ProductBLL
         public Task<bool> DeleteAsync(Guid id);
 
         public Task<List<GetProduct>> GetByCategoryId(Guid categoryId);
+
+        public Task<int> TotalPage(double pageSize, string filterQuery);
+
     }
 }

@@ -5,7 +5,9 @@ namespace Business_Logic_Layer.CategoryBLL
 {
     public interface ICategoryRepositoryBLL
     {
-        public Task<List<GetCategory>> GetAllAsync(GetAllRequestModel request);
+        public Task<List<GetCategory>> GetAllAsync();
+
+        public Task<List<GetCategory>> GetPaginationAsync(int pageNumber, int pageSize);
 
         public Task<GetCategory?> GetByIdAsync(Guid id);
 
@@ -14,5 +16,8 @@ namespace Business_Logic_Layer.CategoryBLL
         public Task<bool> UpdateAsync(Guid id, CategoryUpdate category);
 
         public Task<bool> DeleteAsync(Guid id);
+
+        public Task<int> TotalPage(double pageSize);
+
     }
 }

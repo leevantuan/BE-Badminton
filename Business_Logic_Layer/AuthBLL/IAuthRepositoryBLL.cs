@@ -1,12 +1,6 @@
 ﻿using Data_Transfer_Object.AuthDTO;
 using Data_Transfer_Object.GetAll;
 using DemoBadminton.Model;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Business_Logic_Layer.AuthBLL
 {

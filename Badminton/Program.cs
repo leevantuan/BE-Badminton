@@ -3,6 +3,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//CORS
+builder.Services.AddCors(p => p.AddPolicy("DemoBadminton", buil =>
+{
+    buil.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+}));
+
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("Logs/Demo_Log.txt", rollingInterval: RollingInterval.Minute)
@@ -34,12 +40,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
+
+//CORS
+app.UseCors("DemoBadminton");
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
+//dix
+//app.UseHttpsRedirection();
 
 app.Run();

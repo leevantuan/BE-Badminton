@@ -80,5 +80,20 @@ namespace Data_Access_Layer.Services
             }
         }
 
+        //get by product id
+        public async Task<List<ProductOrder>> GetByProductIdAsync(Guid productId)
+        {
+            try
+            {
+                var getAll = await GetAllAsync();
+                var data = getAll.Where(x => x.ProductId == productId);
+                return data.ToList();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
     }
 }

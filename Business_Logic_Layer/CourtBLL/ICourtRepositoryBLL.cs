@@ -5,7 +5,7 @@ namespace Business_Logic_Layer.CourtBLL
 {
     public interface ICourtRepositoryBLL
     {
-        public Task<List<GetCourt>> GetAllAsync(GetAllRequestModel request);
+        public Task<List<GetCourt>> GetAllAsync();
 
         public Task<GetCourt?> GetByIdAsync(Guid id);
 

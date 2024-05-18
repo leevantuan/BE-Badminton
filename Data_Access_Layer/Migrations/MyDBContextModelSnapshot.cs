@@ -201,6 +201,9 @@ namespace Data_Access_Layer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Brand")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -220,6 +223,9 @@ namespace Data_Access_Layer.Migrations
 
                     b.Property<double>("Quantity")
                         .HasColumnType("float");
+
+                    b.Property<int?>("Size")
+                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
                         .IsRequired()
