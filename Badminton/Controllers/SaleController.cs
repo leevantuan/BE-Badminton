@@ -17,9 +17,15 @@ namespace Badminton.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(GetAllRequestModel request)
+        public async Task<IActionResult> GetAll(int pageNumber, int pageSize, string filterQuery = "")
         {
-            return Ok(await saleRepo.GetAllAsync(request));
+            return Ok(await saleRepo.GetAllAsync(pageNumber, pageSize, filterQuery));
+        }
+
+        [HttpGet("TotalPage")]
+        public async Task<IActionResult> GetTotal( double pageSize, string filterQuery = "")
+        {
+            return Ok(await saleRepo.TotalPage( pageSize, filterQuery));
         }
 
         [HttpGet("{id:guid}")]

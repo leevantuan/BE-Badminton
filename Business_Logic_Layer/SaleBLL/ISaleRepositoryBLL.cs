@@ -5,7 +5,9 @@ namespace Business_Logic_Layer.SaleBLL
 {
     public interface ISaleRepositoryBLL
     {
-        public Task<List<GetSale>> GetAllAsync(GetAllRequestModel request);
+        public Task<List<GetSale>> GetAllAsync(int pageNumber, int pageSize, string filterQuery);
+
+        public Task<int> TotalPage(double pageSize, string filterQuery);
 
         public Task<GetSale?> GetByIdAsync(Guid id);
 

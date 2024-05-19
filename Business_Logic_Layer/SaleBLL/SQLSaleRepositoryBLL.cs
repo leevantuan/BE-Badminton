@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Data_Access_Layer.Entities;
 using Data_Access_Layer.Services.Interface;
-using Data_Transfer_Object.GetAll;
 using Data_Transfer_Object.SaleDTO;
 
 namespace Business_Logic_Layer.SaleBLL
@@ -36,32 +35,17 @@ namespace Business_Logic_Layer.SaleBLL
         }
 
         //get all
-        public async Task<List<GetSale>> GetAllAsync(GetAllRequestModel request)
+        public async Task<List<GetSale>> GetAllAsync(int pageNumber, int pageSize, string filterQuery)
         {
             var allSale = await saleRepo.GetAllAsync();
 
-            if (string.IsNullOrWhiteSpace(request.FilterOn) == false && string.IsNullOrWhiteSpace(request.FilterQuery) == false)
-            {
-                if (request.FilterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                {
-                    //Contains lọc phân biệt chữ hoa chữ thường.
-                    allSale = mapper.Map<List<Sale>>(allSale.Where(p => p.Name.ToLowerInvariant().Contains(request.FilterQuery.ToLowerInvariant())));
-                }
-            }
+            allSale = allSale.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
 
-            if (string.IsNullOrWhiteSpace(request.SortBy) == false)
-            {
-                if (request.SortBy.Equals("Status", StringComparison.OrdinalIgnoreCase))
-                {
-                    allSale = mapper.Map<List<Sale>>(request.IsAcsending ? allSale.OrderBy(x => x.IsStatus) : allSale.OrderByDescending(x => x.IsStatus));
-                }
-            }
-            var skipResult = (request.PageNumber - 1) * request.PageSize;
+            var skipResult = (pageNumber - 1) * pageSize;
 
-            var list = mapper.Map<List<GetSale>>(allSale.Skip(skipResult).Take(request.PageSize));
+            var list = mapper.Map<List<GetSale>>(allSale.Skip(skipResult).Take(pageSize));
 
             return list;
-
         }
 
         //get by id
@@ -69,6 +53,19 @@ namespace Business_Logic_Layer.SaleBLL
         {
             var data = await saleRepo.GetByIdAsync(id);
             return mapper.Map<GetSale?>(data);
+        }
+
+        //total
+        public async Task<int> TotalPage(double pageSize, string filterQuery)
+        {
+            var getAll = await saleRepo.GetAllAsync();
+            getAll = getAll.Where(p => p.Name.ToLowerInvariant().Contains(filterQuery.ToLowerInvariant())).ToList();
+
+            var count = getAll.Count();
+            double pageNumber = count / pageSize;
+            int result = (int)Math.Ceiling(pageNumber);
+
+            return result;
         }
 
         //update
